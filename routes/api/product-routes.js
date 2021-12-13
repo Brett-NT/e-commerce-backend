@@ -7,19 +7,16 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', (req, res) => {
   // find all products
   Product.findAll({
-    attributes: [
-      'id', 'product_name', 'price', 'stock', 'category_id'
-    ],
-    order: [['id', 'product_name', 'price', 'stock', 'category_id']],
+    order: [['product_name']],
     // be sure to include its associated Category and Tag data
     include: [
       {
         model: Category,
-        attributes: ['category_name']
       },
       {
         model: Tag,
-        attributes: ['tag_name']
+        through: ProductTag,
+        as: 'tagged_product',
       }
     ]
   })
@@ -37,37 +34,31 @@ router.get('/:id', (req, res) => {
     where: {
       id: req.params.id
     },
-    attributes: [
-      'id',
-      'product_name',
-      'price',
-      'stock',
-      'category_id'
-    ],
-    order: [['id', 'product_name', 'price', 'stock', 'category_id']],
+    attributes: ['id', 'product_name', 'price', 'stock', 'category_id'],
+    order: [['product_name']],
     // be sure to include its associated Category and Tag data
     include: [
       {
         model: Category,
-        attributes: ['category_name']
       },
       {
         model: Tag,
-        attributes: ['tag_name']
+        through: ProductTag,
+        as: 'tagged_product',
       }
     ]
   })
-  .then(dbProductData => {
-    if (!dbProductData) {
-      res.status(404).json({ message: 'No product found with this id'});
-      return;
-    }
-    res.json(dbProductData);
-  })
-  .catch(err => {
-    console.log(err);
-    res.status(500).json(err);
-  });
+    .then(dbProductData => {
+      if (!dbProductData) {
+        res.status(404).json({ message: 'No product found with this id' });
+        return;
+      }
+      res.json(dbProductData);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json(err);
+    });
 });
 
 // create new product
